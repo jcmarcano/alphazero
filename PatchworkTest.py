@@ -21,96 +21,132 @@ class JaipurTests(unittest.TestCase):
 
 if __name__ == '__main__':
 
+
+    board = np.array([[[0,1,1,1,0,0,0],
+                       [0,1,1,0,1,1,0],
+                       [1,0,1,1,1,0,0],
+                       [1,0,1,1,0,1,1],
+                       [1,1,1,1,0,0,1],
+                       [1,0,1,0,1,1,1],
+                       [1,0,1,1,1,0,0]],
+
+                      [[0,0,0,1,1,0,0],
+                       [0,1,1,1,1,0,0],
+                       [0,1,0,1,1,0,0],
+                       [0,1,1,0,1,1,1],
+                       [0,0,1,1,1,1,0],
+                       [1,1,1,1,1,1,1],
+                       [0,1,1,0,1,1,1]],
+
+                      [[ 5, 1,19,20, 3, 6,22],
+                       [22,20,-1, 0,23,21,22],
+                       [ 8,12, 6,13,19,20, 0],
+                       [ 0, 0, 0, 0, 0, 0, 0],
+                       [ 0, 0, 0, 0, 0, 0, 0],
+                       [ 0, 0, 0, 0, 0, 0, 0],
+                       [ 0, 0, 0, 0, 0, 0, 0]]])
+    
     game = PatchworkGame(version = 1)
+    game.display(board)
+    moves = np.nonzero(game.getValidMoves(board, -1))[0]
+    print(moves)
+#    board1, nextPlayer = game.getNextState(board, -1, 444)
 
-    board = game.getInitBoard()
-    print(board)
-    moves = game.getValidMoves(board = board, player = 1)
-    print (np.nonzero(moves)[0][5])
-    board1, _ = game.getNextState(board, 1, np.nonzero(moves)[0][5])
-    print(board1)
-    moves1 = game.getValidMoves(board = board1, player = 1)
-    movesCube = np.reshape(moves1, (25,8,7,7))
+#    game.display(board1)
 
-    for i in range(25):
-        if i == 0 or i == 24:
-            patchFigure = np.array([[1]])
+    
+
+    if False:
+        game = PatchworkGame(version = 1)
+
+        board = game.getInitBoard()
+        print(board)
+        moves = game.getValidMoves(board = board, player = 1)
+        print (np.nonzero(moves)[0][5])
+        board1, _ = game.getNextState(board, 1, np.nonzero(moves)[0][5])
+        print(board1)
+        moves1 = game.getValidMoves(board = board1, player = 1)
+        movesCube = np.reshape(moves1, (25,8,7,7))
+
+        for i in range(25):
+            if i == 0 or i == 24:
+                patchFigure = np.array([[1]])
+            else:
+                patchFigure = np.array(game.patches[i -1][0])
+
+            for k in range(7):
+                s = ""
+                for j in range(8):
+                    for l in range(7):
+                        opt = "OX" if board1[0,k,l] else ".X"
+                        s += " " + opt[movesCube[i,j,k,l]] + " "
+                    s += "    "
+
+                if k > 1 and k - 1 <= patchFigure.shape[0]:
+                    for m in range(patchFigure.shape[1]):
+                        s += " " + " x"[patchFigure[k - 2,m]] + " "
+
+                print(s)
+            print ("")
+
+        print("########################### BOARDS ########################################")
+        print("")
+
+        board2, _ = game.getNextState(board1, 2, 23*8*7*7 + 2*7 + 3)
+        symetries = game.getSymmetries(board2, moves1)
+        for i in range(3):
+            for k in range(7):
+                s=""
+                for j in range(8):
+                    symBoard = symetries[j][0][i]
+                    for l in range(7):
+                        if (symBoard[k,l]) < 10:
+                            s+=" "
+                        s += " " + str(int(symBoard[k,l])) + " "
+                    s += "    "
+                print(s)
+            print ("")
+
+        print("########################## SYMETRIES #######################################")
+        print("")
+
+
+        patchNo = 14# int(np.nonzero(moves1)[0][0] / (8 * 7 * 7))
+        print (patchNo)
+        if patchNo == 0 or patchNo == 24:
+            patchFigure1 = np.array([[1]])
         else:
-            patchFigure = np.array(game.patches[i -1][0])
+            patchFigure1 = np.array(game.patches[patchNo - 1][0])
 
-        for k in range(7):
-            s = ""
-            for j in range(8):
-                for l in range(7):
-                    opt = "OX" if board1[0,k,l] else ".X"
-                    s += " " + opt[movesCube[i,j,k,l]] + " "
-                s += "    "
+        for i in range(8):
+            if i < 4:
+                patchFigure2 = np.rot90(patchFigure1,i%4)
+            else:
+                patchFigure2 = np.rot90(np.flip(patchFigure1, axis = 0),i%4)
+            for k in range(7):
+                s=""
+                for m in range(7):
+                    opt = "OX" if board1[0,k,m] else ".X"
+                    s += " " + opt[movesCube[patchNo,i,k,m]] + " "
 
-            if k > 1 and k - 1 <= patchFigure.shape[0]:
-                for m in range(patchFigure.shape[1]):
-                    s += " " + " x"[patchFigure[k - 2,m]] + " "
+                s += "  |  "
+                for j in range(8):
 
-            print(s)
-        print ("")
+                    symBoard = symetries[j][0][0]
+                    symPositionsCube = np.reshape(symetries[j][1],(25,8,7,7))
+                    symPositions = symPositionsCube[patchNo,i]
+                    for l in range(7):
+                        opt = "OX" if symBoard[k,l] else ".X"
+                        s += " " + opt[int(symPositions[k,l])] + " "
+                    s += "    "
 
-    print("########################### BOARDS ########################################")
-    print("")
+                if k > 1 and k - 1 <= patchFigure2.shape[0]:
+                    for n in range(patchFigure2.shape[1]):
+                        s += " " + " x"[patchFigure2[k - 2,n]] + " "
 
-    board2, _ = game.getNextState(board1, 2, 23*8*7*7 + 2*7 + 3)
-    symetries = game.getSymmetries(board2, moves1)
-    for i in range(3):
-        for k in range(7):
-            s=""
-            for j in range(8):
-                symBoard = symetries[j][0][i]
-                for l in range(7):
-                    if (symBoard[k,l]) < 10:
-                        s+=" "
-                    s += " " + str(int(symBoard[k,l])) + " "
-                s += "    "
-            print(s)
-        print ("")
+                print(s)
 
-    print("########################## SYMETRIES #######################################")
-    print("")
-
-
-    patchNo = 14# int(np.nonzero(moves1)[0][0] / (8 * 7 * 7))
-    print (patchNo)
-    if patchNo == 0 or patchNo == 24:
-        patchFigure1 = np.array([[1]])
-    else:
-        patchFigure1 = np.array(game.patches[patchNo - 1][0])
-
-    for i in range(8):
-        if i < 4:
-            patchFigure2 = np.rot90(patchFigure1,i%4)
-        else:
-            patchFigure2 = np.rot90(np.flip(patchFigure1, axis = 0),i%4)
-        for k in range(7):
-            s=""
-            for m in range(7):
-                opt = "OX" if board1[0,k,m] else ".X"
-                s += " " + opt[movesCube[patchNo,i,k,m]] + " "
-
-            s += "  |  "
-            for j in range(8):
-
-                symBoard = symetries[j][0][0]
-                symPositionsCube = np.reshape(symetries[j][1],(25,8,7,7))
-                symPositions = symPositionsCube[patchNo,i]
-                for l in range(7):
-                    opt = "OX" if symBoard[k,l] else ".X"
-                    s += " " + opt[int(symPositions[k,l])] + " "
-                s += "    "
-
-            if k > 1 and k - 1 <= patchFigure2.shape[0]:
-                for n in range(patchFigure2.shape[1]):
-                    s += " " + " x"[patchFigure2[k - 2,n]] + " "
-
-            print(s)
-
-        print ("")
+            print ("")
 
     
 

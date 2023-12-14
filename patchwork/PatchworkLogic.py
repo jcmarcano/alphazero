@@ -109,6 +109,14 @@ class State:
             [0,1,2,3,4,5,6,7]
         ]
 
+    def getBoard(self):
+        patchDeck = np.copy(self.patchDeck)
+        patchDeck.resize(len(self.patches))
+
+        gameInfoTemp = np.concatenate((np.copy(self.buttons), np.copy(self.pos), np.copy(self.value), np.copy(self.buttonPos), np.array([self.leatherPatchPos, self.playerJustMoved, self.deckPos]), patchDeck))        
+        gameInfoTemp.resize(self.size * self.size)
+        gameInfo = np.reshape(gameInfoTemp, (1, self.size, self.size))
+        return np.concatenate((np.copy(self.board), gameInfo))
 
     def DoMove(self, move, player):
         playerPos = 0 if player == 1 else 1
@@ -150,7 +158,7 @@ class State:
 #            print (board)
 #            print (patchFigure)
 #            print (patchHeight, patchWidth)
-            board[position[0] : position[0] + patchHeight, position[1] : position[1] + patchWidth] = patchFigure
+            board[position[0] : position[0] + patchHeight, position[1] : position[1] + patchWidth] += patchFigure
 
             # Pay for patch
             self.buttons[playerPos] -= patch[2]
@@ -196,21 +204,13 @@ class State:
 #        print (self)
 
 
-    def getBoard(self):
-        patchDeck = np.copy(self.patchDeck)
-        patchDeck.resize(len(self.patches))
-
-        gameInfoTemp = np.concatenate((np.copy(self.buttons), np.copy(self.pos), np.copy(self.value), np.copy(self.buttonPos), np.array([self.leatherPatchPos, self.playerJustMoved, self.deckPos]), patchDeck))        
-        gameInfoTemp.resize(self.size * self.size)
-        gameInfo = np.reshape(gameInfoTemp, (1, self.size, self.size))
-        return np.concatenate((np.copy(self.board), gameInfo))
 
     def GetMoves(self, player):
         playerPos = 0 if player == 1 else 1
 
         if self.pos[playerPos] >= self.leatherPatchPos:
             # Next move = place leather patch
-            positions = np.argwhere(self.board[playerPos - 1]==0)
+            positions = np.argwhere(self.board[playerPos]==0)
             if len(positions) > 0:
                 moves = [(0,0,(p[0],p[1])) for p in positions ]
 #                print(moves)
@@ -238,19 +238,20 @@ class State:
                 patchFigure = np.array(patch[0])
                 orientations = self.orientationTypes[patch[4]]
 
-    #            print (f"pos: {deckPos}, patch: {patchFigure}, orientations: {orientations}:")
+#                print (f"pos: {deckPos}, patch: {patchFigure}, orientations: {orientations}:")
                 # Review all posible combinations
                 for j in orientations:
                     patchOption = self.getPatchOrientation(patchFigure, j)
 
-    #                print (f"figure: {patchOption}, shape: {patchOption.shape}")
+#                    print (f"figure: {patchOption}, shape: {patchOption.shape}")
                     # Find positions
                     for x in range(int((self.size - patchOption.shape[0])/corner)+1):
                         for y in range(int((self.size - patchOption.shape[1])/corner)+1):
-    #                        print(f"Move: ({self.patchDeck[deckPos]},{x},{y},{j}))")
+#                            print(f"Move: ({self.patchDeck[deckPos]},{j},{x},{y}))")
 
                             # Validate patch orientation
                             fits = np.all(1 - np.multiply(board[x:x+patchOption.shape[0], y:y+patchOption.shape[1]],patchOption))
+#                            print (f"fits: {fits}")
                             if fits: moves.append((int(self.patchDeck[deckPos]),j,(x,y)))
 
             deckPos += 1
@@ -293,17 +294,16 @@ class State:
             newPatch = np.flip(newPatch, axis = 0)
         return np.rot90(newPatch, orientation%4)
         
-    def getNextPlayer(self, player):
-        playerPos = 0 if player == 1 else 1
-        if self.pos[playerPos] >= self.leatherPatchPos:
-            return player
-        if self.pos[1-playerPos] >= self.leatherPatchPos:
-            return -player
-        if (self.pos[playerPos] < self.pos[1 - playerPos]):
-            return player
-        if (self.pos[playerPos] > self.pos[1 - playerPos]):
-            return -player
-        return self.playerJustMoved * player  # if both positions are equal, last player repeat
+    def getNextPlayer(self):
+        if self.pos[0] >= self.leatherPatchPos:
+            return 1
+        if self.pos[1] >= self.leatherPatchPos:
+            return -1
+        if (self.pos[0] < self.pos[1]):
+            return 1
+        if (self.pos[1] < self.pos[0]):
+            return -1
+        return self.playerJustMoved  # if both positions are equal, last player repeat
 
     def __repr__(self):
         s = ""
@@ -342,9 +342,9 @@ class State:
         for i in range (1, self.matchEnd + 1):
             
             if i == self.pos[playerJMPos]:
-                s+= str(playerJMPos)
+                s+= "12"[playerJMPos]
             elif i == self.pos[1 - playerJMPos]:
-                s+= str(1-playerJMPos)
+                s+= "12"[1 - playerJMPos]
             elif i == posLeatherPatch:
                 s+= chr(9632)
             elif i == posButton:

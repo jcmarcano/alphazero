@@ -73,7 +73,7 @@ class PatchworkGame(Game):
         position = action % (self.size*self.size)
         move = (patch, orientation, (int(position/self.size), position%self.size))
         st.DoMove(move, player)
-        return st.getBoard(), st.getNextPlayer(player)
+        return st.getBoard(), st.getNextPlayer()
 
 
     def getValidMoves(self, board, player):
@@ -99,8 +99,8 @@ class PatchworkGame(Game):
         newBoard = np.zeros(self.getBoardSize(), dtype=int)
 
         # Boards
-        newBoard[0] = board[1]
-        newBoard[1] = board[0]
+        newBoard[0] = np.copy(board[1])
+        newBoard[1] = np.copy(board[0])
 
         GameInfo = np.copy(np.ravel(board[2]))
         newGameInfo = np.zeros(GameInfo.shape, dtype=int)
@@ -215,23 +215,6 @@ class PatchworkGame(Game):
 #        print (f"getSymetryPositions - positionPi: {positionPi}, newOrientation: {newOrientation}")
 
         return np.roll(State().getPatchOrientation(positionPi, newOrientation), shift, axis = axis)
-
-    def validateMoves(self, board, pi):
-        for patchNo in range(25):
-            if patchNo > 0 and patchNo < 24:
-                patchFigure = np.array(self.patches[patchNo - 1][0])
-               
-            for o in range(8):
-                if patchNo > 0 and patchNo < 24:
-                    patchO = State().getPatchOrientation(patchFigure, 0)
-                    h = patchO.shape[0]
-                    w = patchO.shape[1]
-                else:
-                    h = 1
-                    w = 1
-                for x in range(7):
-                    for y in range(7):
-                        pass
 
     def stringRepresentation(self, board):
         return board.tostring()

@@ -21,40 +21,23 @@ class JaipurTests(unittest.TestCase):
 
 if __name__ == '__main__':
 
+    game = PatchworkGame(version=1)
 
-    board = np.array([[[0,1,1,1,0,0,0],
-                       [0,1,1,0,1,1,0],
-                       [1,0,1,1,1,0,0],
-                       [1,0,1,1,0,1,1],
-                       [1,1,1,1,0,0,1],
-                       [1,0,1,0,1,1,1],
-                       [1,0,1,1,1,0,0]],
-
-                      [[0,0,0,1,1,0,0],
-                       [0,1,1,1,1,0,0],
-                       [0,1,0,1,1,0,0],
-                       [0,1,1,0,1,1,1],
-                       [0,0,1,1,1,1,0],
-                       [1,1,1,1,1,1,1],
-                       [0,1,1,0,1,1,1]],
-
-                      [[ 5, 1,19,20, 3, 6,22],
-                       [22,20,-1, 0,23,21,22],
-                       [ 8,12, 6,13,19,20, 0],
-                       [ 0, 0, 0, 0, 0, 0, 0],
-                       [ 0, 0, 0, 0, 0, 0, 0],
-                       [ 0, 0, 0, 0, 0, 0, 0],
-                       [ 0, 0, 0, 0, 0, 0, 0]]])
-    
-    game = PatchworkGame(version = 1)
+    board = game.getInitBoard()
     game.display(board)
-    moves = np.nonzero(game.getValidMoves(board, -1))[0]
-    print(moves)
-#    board1, nextPlayer = game.getNextState(board, -1, 444)
 
-#    game.display(board1)
+    while game.getGameEnded(board, 1) == 0:
+        moves = game.getValidMoves(board = board, player = 1)
+        action = np.random.choice(np.nonzero(moves)[0])
+        print("---------------------------")
+        print(f"action: {action}")
 
-    
+        board, nextPlayer = game.getNextState(board, 1, action)
+        print(f"nextPlayer: {nextPlayer}")
+        board = game.getCanonicalForm(board, nextPlayer)
+        game.display(board)
+
+
 
     if False:
         game = PatchworkGame(version = 1)

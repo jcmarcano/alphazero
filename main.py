@@ -37,6 +37,8 @@ args = dotdict({
 
 
 def main():
+##    fh = logging.FileHandler("output.log", 'w', 'utf-8')
+##    log.addHandler(fh)
     log.info('Loading %s...', Game.__name__)
     g = Game(version=1)
 

@@ -46,6 +46,17 @@ class Game():
         """
         pass
 
+    def getNextPlayer(self, board, player):
+        """
+        Input:
+            board: current board
+            player: current player (1 or -1)
+
+        Returns:
+            nextPlayer: player who plays in the next turn (should be -player)
+        """
+        return -player
+
     def getValidMoves(self, board, player):
         """
         Input:
@@ -58,6 +69,16 @@ class Game():
                         0 for invalid moves
         """
         pass
+
+    def isChanceState(self, board):
+        """
+        Input:
+            board: current board
+
+        Returns:
+            isChanceState: True is the state is generated randomly, False otherwise
+        """
+        return False
 
     def getGameEnded(self, board, player):
         """
@@ -99,7 +120,7 @@ class Game():
                        form of the board and the corresponding pi vector. This
                        is used when training the neural network from examples.
         """
-        pass
+        return [(board,pi)]
 
     def stringRepresentation(self, board):
         """

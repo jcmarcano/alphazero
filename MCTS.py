@@ -79,8 +79,10 @@ class MCTS():
         if self.Es[s] != 0:
             # terminal node
             return -self.Es[s]
+        
+        isChanceNode = self.game.isChanceState(canonicalBoard)
 
-        if s not in self.Ps:
+        if s not in self.Ps or isChanceNode:
             # leaf node
             self.Ps[s], v = self.nnet.predict(canonicalBoard)
             valids = self.game.getValidMoves(canonicalBoard, 1)
@@ -98,9 +100,10 @@ class MCTS():
                 self.Ps[s] /= np.sum(self.Ps[s])
 
             self.Vs[s] = valids
-            self.Ns[s] = 0
-            return -v
-
+            if (not isChanceNode):
+                self.Ns[s] = 0
+                return v * self.game.getNextPlayer(canonicalBoard, 1)
+        
         valids = self.Vs[s]
         cur_best = -float('inf')
         best_act = -1
@@ -133,4 +136,4 @@ class MCTS():
             self.Nsa[(s, a)] = 1
 
         self.Ns[s] += 1
-        return -v
+        return v * self.game.getNextPlayer(canonicalBoard, 1)

@@ -75,6 +75,9 @@ class PatchworkGame(Game):
         st.DoMove(move, player)
         return st.getBoard(), st.getNextPlayer()
 
+    def getNextPlayer(self, board, player):
+        st = State(version = self.version, board = board)
+        return st.getNextPlayer()
 
     def getValidMoves(self, board, player):
         # return a fixed size binary vector
@@ -96,14 +99,14 @@ class PatchworkGame(Game):
         if player == 1:
             return np.copy(board)
 
-        newBoard = np.zeros(self.getBoardSize(), dtype=int)
+        newBoard = np.zeros(self.getBoardSize())
 
         # Boards
         newBoard[0] = np.copy(board[1])
         newBoard[1] = np.copy(board[0])
 
         GameInfo = np.copy(np.ravel(board[2]))
-        newGameInfo = np.zeros(GameInfo.shape, dtype=int)
+        newGameInfo = np.zeros(GameInfo.shape)
 
         # Player Info
         newGameInfo[0] = GameInfo[1]

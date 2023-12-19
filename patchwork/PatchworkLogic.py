@@ -65,8 +65,8 @@ class State:
             # Boards
             self.playerJustMoved = 1 
             self.board = np.zeros((2, self.size, self.size))
-            self.buttons = np.array([5,5])
             self.pos = np.array([1,1])
+            self.buttons = np.array([5,5])
             self.value = np.array([0,0])
 
             # Main board
@@ -75,12 +75,11 @@ class State:
 
             # Patches
             if version == 1:
-                self.patchDeck = np.arange(15) + 1
+                patchDeck = np.arange(2, 15 + 1)
             else:
-                self.patchDeck = np.arange(len(self.patches)) + 1
-            random.shuffle(self.patchDeck)
-            self.deckPos = int(np.argmax(self.patchDeck == 1)) + 1
-            if self.deckPos >= len(self.patchDeck): self.deckPos = 0
+                patchDeck = np.arange(2, len(self.patches) + 1)
+            random.shuffle(patchDeck)
+            self.patchDeck = np.append(patchDeck, [1])
 
         else:
             # Boards
@@ -97,8 +96,7 @@ class State:
             self.playerJustMoved = GameInfo[9]
 
             # Patches
-            self.deckPos = int(GameInfo[10])
-            self.patchDeck = np.trim_zeros(GameInfo[11: 11 + len(self.patches) + 1])
+            self.patchDeck = np.trim_zeros(GameInfo[10: 10 + len(self.patches) + 1])
 #            print (f"Init patch deck: {self.patchDeck}")
 
         self.orientationTypes = [
@@ -113,7 +111,7 @@ class State:
         patchDeck = np.copy(self.patchDeck)
         patchDeck.resize(len(self.patches))
 
-        gameInfoTemp = np.concatenate((np.copy(self.buttons), np.copy(self.pos), np.copy(self.value), np.copy(self.buttonPos), np.array([self.leatherPatchPos, self.playerJustMoved, self.deckPos]), patchDeck))        
+        gameInfoTemp = np.concatenate((np.copy(self.buttons), np.copy(self.pos), np.copy(self.value), np.copy(self.buttonPos), np.array([self.leatherPatchPos, self.playerJustMoved]), patchDeck))        
         gameInfoTemp.resize(self.size * self.size)
         gameInfo = np.reshape(gameInfoTemp, (1, self.size, self.size))
         return np.concatenate((np.copy(self.board), gameInfo))
@@ -159,6 +157,11 @@ class State:
 #            print (patchFigure)
 #            print (patchHeight, patchWidth)
             board[position[0] : position[0] + patchHeight, position[1] : position[1] + patchWidth] += patchFigure
+            if np.any(board [position[0] : position[0] + patchHeight, position[1] : position[1] + patchWidth] > 1):
+                print(move)
+                print(board)
+                print(patchFigure)
+            assert np.all(board [position[0] : position[0] + patchHeight, position[1] : position[1] + patchWidth] < 2)
 
             # Pay for patch
             self.buttons[playerPos] -= patch[2]
@@ -170,24 +173,18 @@ class State:
             self.pos[playerPos] += patch[1]
 
             # Remove patch from deck
-            self.deckPos = np.argmax(self.patchDeck == patchNumber)
+            patchPos = np.argmax(self.patchDeck == patchNumber)
 #            print (self.patchDeck)
-#            print (f"Remove patch {patchNumber} in pos {self.deckPos}")
-            self.patchDeck = np.delete(self.patchDeck, self.deckPos)
-            if self.deckPos >= len(self.patchDeck): self.deckPos = 0
+#            print (f"Remove patch {patchNumber} in pos {patchPos}")
 
-            # For PatworkExpress, if there are 5 patches left, add blue tokens
+            self.patchDeck = np.append(self.patchDeck[patchPos + 1:],self.patchDeck[:patchPos])
+
+            # For PatworkExpress, if there are 5 patches left, add blue tokens randomly
             if self.version == 1 and len(self.patchDeck) <= 5:
-#                print (f"pre blue patches: {self.patchDeck}")
                 bluePatches = np.arange(8) + 16
                 random.shuffle(bluePatches)
-#                print (self.patchDeck[:self.deckPos])
-#                print (bluePatches)
-#                print (self.patchDeck[self.deckPos:])
 
-                self.patchDeck = np.concatenate((self.patchDeck[:self.deckPos],  bluePatches, self.patchDeck[self.deckPos:]))
-                self.deckPos += 8
-#                print (f"post blue patches: {self.patchDeck}")
+                self.patchDeck = np.append(self.patchDeck,  bluePatches)
 
 
         # Update buttons when passing button mark
@@ -226,9 +223,8 @@ class State:
 
         # If first time, take options from one corner (avoid repeat symetric options)
         corner = 1 #2 if np.count_nonzero(board) == 0 else 1
-        deckPos = self.deckPos
 
-        for _ in range(min(3, len(self.patchDeck))):
+        for deckPos in range(min(3, len(self.patchDeck))):
 
 #            print (f"deckPos: {deckPos}, deck: {self.patchDeck}")
             patch = self.patches[int(self.patchDeck[deckPos] - 1)]
@@ -253,9 +249,6 @@ class State:
                             fits = np.all(1 - np.multiply(board[x:x+patchOption.shape[0], y:y+patchOption.shape[1]],patchOption))
 #                            print (f"fits: {fits}")
                             if fits: moves.append((int(self.patchDeck[deckPos]),j,(x,y)))
-
-            deckPos += 1
-            if deckPos >= len(self.patchDeck): deckPos = 0
 
         # Advance Move
         if self.pos[playerPos] <= self.pos[1 - playerPos]:
@@ -326,13 +319,9 @@ class State:
                 else:
                     s+= "      "
             s+= "\n"
-        for i in range(self.deckPos, len(self.patchDeck)):
-            if (self.patchDeck[i] < 10): s+= " "
-            s += str(int(self.patchDeck[i])) + " "
-        if self.deckPos > 0:
-            for i in range(self.deckPos):
-                if (self.patchDeck[i] < 10): s+= " "
-                s += str(int(self.patchDeck[i])) + " "
+        for i in self.patchDeck:
+            if (i < 10): s+= " "
+            s += str(i) + " "
         s+= "\n"
 
         posLeatherPatch = self.leatherPatchPos

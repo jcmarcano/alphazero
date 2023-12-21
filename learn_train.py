@@ -29,37 +29,20 @@ args = dotdict({
     'cpuct': 1,
 
     'checkpoint': './temp/',
-    'load_model': False,
-    'load_folder_file': ('/dev/models/jaipur','best.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 
 })
 
 
 def main():
-##    fh = logging.FileHandler("output.log", 'w', 'utf-8')
-##    log.addHandler(fh)
     log.info('Loading %s...', Game.__name__)
     g = Game(version=1)
 
-    log.info('Loading %s...', nn.__name__)
-#    nnet = nn(g)
-
-    # if args.load_model:
-    #     log.info('Loading checkpoint "%s/%s"...', args.load_folder_file[0], args.load_folder_file[1])
-    #     nnet.load_checkpoint(args.load_folder_file[0], args.load_folder_file[1])
-    # else:
-    #     log.warning('Not loading a checkpoint!')
-
     log.info('Loading the Coach...')
-#    c = Coach(g, nnet, args)
     c = Coach(g, nn, args)
-    if args.load_model:
-        log.info("Loading 'trainExamples' from file...")
-        c.loadTrainExamples()
 
-    log.info('Starting the learning process 🎉')
-    c.learn()
+    log.info('Starting the training process 🎉')
+    c.train(1)
 
 
 if __name__ == "__main__":

@@ -183,8 +183,8 @@ class PatchworkGame(Game):
                 if x + po.shape[0] <=7 and y+po.shape[1] <= 7:
                     pass
                 else:
-                    print(newBoard)
-                    print (f"sym: {symOrientation}, p: {p}, o: {o}, pos: ({x},{y})")
+#                    print(newBoard)
+#                    print (f"sym: {symOrientation}, p: {p}, o: {o}, pos: ({x},{y})")
                     assert x + po.shape[0] <=7 and y+po.shape[1] <= 7
 
             lastAction = action

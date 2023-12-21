@@ -10,9 +10,9 @@ from .PatchworkNNet import PatchworkNNet as onnet
 args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
-    'epochs': 5,
-    'batch_size': 64,
-    'cuda': True,
+    'epochs': 10,
+    'batch_size': 320,
+    'cuda': False,
     'num_channels': 512,
 })
 
@@ -42,7 +42,7 @@ def normalize_board(game, board):
 
     newBoard[2] = np.reshape(newGameInfo, (game.size, game.size))
     
-    return newBoard
+    return newBoard.flatten()
 
 
 class NNetWrapper(NeuralNet):

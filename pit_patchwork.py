@@ -16,14 +16,14 @@ g = Game(version=1)
 
 # nnet players
 n1 = NNet(g)
-n1.load_checkpoint('./temp/','temp.h5')
-args1 = dotdict({'numMCTSSims': 50, 'cpuct':1.0})
+n1.load_checkpoint('./temp/','best.h5')
+args1 = dotdict({'numMCTSSims': 200, 'cpuct':1.0})
 mcts1 = MCTS(g, n1, args1)
 n1p = lambda x: np.argmax(mcts1.getActionProb(x, temp=0))
 
 n2 = NNet(g)
-n2.load_checkpoint('./temp','temp.h5')
-args2 = dotdict({'numMCTSSims': 50, 'cpuct': 1.0})
+n2.load_checkpoint('./temp','best.h5')
+args2 = dotdict({'numMCTSSims': 200, 'cpuct': 1.0})
 mcts2 = MCTS(g, n2, args2)
 n2p = lambda x: np.argmax(mcts2.getActionProb(x, temp=0))
 

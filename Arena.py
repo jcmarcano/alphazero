@@ -1,6 +1,7 @@
 import logging
 
 from tqdm import tqdm
+from p_tqdm import p_map
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class Arena():
         self.game = game
         self.display = display
 
-    def playGame(self, verbose=False):
+    def playGame(self, gameNo=0, verbose=False):
         """
         Executes one episode of a game.
 
@@ -37,6 +38,7 @@ class Arena():
             or
                 draw result returned from the game that is neither 1, -1, nor 0.
         """
+        print(f"init game: {gameNo}")
         players = [self.player2, None, self.player1]
         curPlayer = 1
         board = self.game.getInitBoard()
@@ -63,7 +65,7 @@ class Arena():
             self.display(board)
         return curPlayer * self.game.getGameEnded(board, curPlayer)
 
-    def playGames(self, num, verbose=False):
+    def playGames(self, num, verbose=False, parallel=False):
         """
         Plays num games in which player1 starts num/2 games and player2 starts
         num/2 games.
@@ -78,24 +80,45 @@ class Arena():
         oneWon = 0
         twoWon = 0
         draws = 0
-        for _ in tqdm(range(num), desc="Arena.playGames (1)"):
-            gameResult = self.playGame(verbose=verbose)
-            if gameResult == 1:
-                oneWon += 1
-            elif gameResult == -1:
-                twoWon += 1
-            else:
-                draws += 1
+
+        if parallel:
+            for gameResult in p_map(self.playGame, range(num), [verbose]*num, desc="Arena.playGames (1)"):
+                if gameResult == 1:
+                    oneWon += 1
+                elif gameResult == -1:
+                    twoWon += 1
+                else:
+                    draws += 1
+
+        else:
+            for _ in tqdm(range(num), desc="Arena.playGames (1)"):
+                gameResult = self.playGame(verbose=verbose)
+                if gameResult == 1:
+                    oneWon += 1
+                elif gameResult == -1:
+                    twoWon += 1
+                else:
+                    draws += 1
 
         self.player1, self.player2 = self.player2, self.player1
 
-        for _ in tqdm(range(num), desc="Arena.playGames (2)"):
-            gameResult = self.playGame(verbose=verbose)
-            if gameResult == -1:
-                oneWon += 1
-            elif gameResult == 1:
-                twoWon += 1
-            else:
-                draws += 1
+        if parallel:
+            for gameResult in p_map(self.playGame, range(num), [verbose]*num, desc="Arena.playGames (2)"):
+                if gameResult == -1:
+                    oneWon += 1
+                elif gameResult == 1:
+                    twoWon += 1
+                else:
+                    draws += 1
+
+        else:
+            for _ in tqdm(range(num), desc="Arena.playGames (2)"):
+                gameResult = self.playGame(verbose=verbose)
+                if gameResult == -1:
+                    oneWon += 1
+                elif gameResult == 1:
+                    twoWon += 1
+                else:
+                    draws += 1
 
         return oneWon, twoWon, draws

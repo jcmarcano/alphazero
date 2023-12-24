@@ -51,6 +51,10 @@ class NNetWrapper(NeuralNet):
         self.action_size = game.getActionSize(net = True)
         self.game = game
 
+    def initModel(self):
+        self.nnet.compile()
+
+
     def train(self, examples):
         """
         examples: list of examples, each example is of form (board, pi, v)
@@ -95,4 +99,8 @@ class NNetWrapper(NeuralNet):
         filename = filename.split(".")[0] + ".h5"
         
         filepath = os.path.join(folder, filename)
+        if not os.path.isfile(filepath):
+            return False
+        
         self.nnet.model.load_weights(filepath)
+        return True

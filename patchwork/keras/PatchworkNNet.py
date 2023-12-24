@@ -1,13 +1,13 @@
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import Activation, BatchNormalization, Dense, Dropout, Flatten, Input, Conv3D, Reshape
+from tensorflow.keras.optimizers import Adam
 
 
 class PatchworkNNet():
 
     def __init__(self, game, args):
         # game params
-        from tensorflow.keras.models import Model
-        from tensorflow.keras.layers import Activation, BatchNormalization, Dense, Dropout, Flatten, Input, Conv3D, Reshape
-        from tensorflow.keras.optimizers import Adam
-        import tensorflow as tf
 
         self.board_z, self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize(net = True)
@@ -24,7 +24,9 @@ class PatchworkNNet():
         self.v = Dense(1, activation='tanh', name='v')(s_fc3)                    # batch_size x 1
 
 
-        self.model = Model(inputs=self.input_boards, outputs=[self.pi0, self.pi1, self.v])
-        self.model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'mean_squared_error'], optimizer=Adam(args.lr))
+    def compile(self, weigths = None):
 
-    
+        self.model = Model(inputs=self.input_boards, outputs=[self.pi0, self.pi1, self.v])
+        self.model.compile(loss=['categorical_crossentropy', 'categorical_crossentropy', 'mean_squared_error'], optimizer=Adam(self.args.lr))
+        if weigths:
+            self.model.set_weigths(weigths)

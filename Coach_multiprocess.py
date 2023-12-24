@@ -139,7 +139,7 @@ class Coach():
         nnet.train(trainExamples)
         nnet.save_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
 
-    def pit(self, verbose=False):
+    def pit(self, iter = 1, verbose=False):
         
         # Get Iter Number
         lastIter = self.loadTrainExamples()

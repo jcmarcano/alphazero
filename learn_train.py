@@ -42,7 +42,7 @@ def main():
     c = Coach(g, nn, args)
 
     log.info('Starting the training process 🎉')
-    c.train(1)
+    c.train()
 
 
 if __name__ == "__main__":

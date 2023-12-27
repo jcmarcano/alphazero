@@ -11,6 +11,7 @@ from p_tqdm import p_map
 
 from MCTS import MCTS
 from Arena import Arena
+from AgentAlphaZero import AgentAlphaZero as Agent
 from multiprocessing import Pool
 import sys
 
@@ -149,10 +150,10 @@ class Coach():
         iter = lastIter + 1
         log.info(f'PITTING AGAINST PREVIOUS VERSION FOR ITER #{iter} ...')
 
-        arena = Arena(lambda x: self.getPlayer(x, 'best.pth.tar'), # Previous netwrok
-                      lambda x: self.getPlayer(x, 'temp.pth.tar'), # New netwrok
+        arena = Arena(Agent(self.game, self.nn, 'best.pth.tar', self.args), # Previous netwrok
+                      Agent(self.game, self.nn, 'temp.pth.tar', self.args), # New netwrok
                       self.game, display=self.game.display)
-        pwins, nwins, draws = arena.playGames(self.args.arenaCompare, verbose=verbose, parallel=True)
+        pwins, nwins, draws = arena.playGames(self.args.arenaCompare, verbose=self.args.verbose, parallel=True)
 
         log.info('NEW/PREV WINS : %d / %d ; DRAWS : %d' % (nwins, pwins, draws))
         if pwins + nwins == 0 or float(nwins) / (pwins + nwins) < self.args.updateThreshold:
@@ -165,18 +166,6 @@ class Coach():
             nnet.load_checkpoint(folder=self.args.checkpoint, filename='temp.pth.tar')
             nnet.save_checkpoint(folder=self.args.checkpoint, filename=self.getCheckpointFile(iter))
             nnet.save_checkpoint(folder=self.args.checkpoint, filename='best.pth.tar')
-
-    def getPlayer(self, x, checkpointFileName):
-        """
-        Perform an MCTS action using the corresponding checkpoit file. Created to be used in multiprocess arena
-        """
-        nnet = self.nn(self.game)
-        nnet.initModel()
-        if not nnet.load_checkpoint(folder=self.args.checkpoint, filename=checkpointFileName):
-            log.error(f"{checkpointFileName} not found")
-            assert False
-        nmcts = MCTS(self.game, nnet, self.args)
-        return np.argmax(nmcts.getActionProb(x, temp=0))
 
     def learn(self):
         """
@@ -214,6 +203,8 @@ class Coach():
 
     def loadTrainExamples(self, iteration=None):
         folder = self.args.checkpoint
+        if not os.path.exists(folder):
+            os.makedirs(folder)
         if iteration is None:
             # load last iteration
             for file in os.listdir(folder):

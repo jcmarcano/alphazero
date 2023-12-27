@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 from tqdm import tqdm
 from p_tqdm import p_map
 
@@ -39,7 +40,7 @@ class Arena():
                 draw result returned from the game that is neither 1, -1, nor 0.
         """
         print(f"init game: {gameNo}")
-        players = [self.player2, None, self.player1]
+        policies = [self.player2.getActionPolicy(), None, self.player1.getActionPolicy()]
         curPlayer = 1
         board = self.game.getInitBoard()
         it = 0
@@ -48,7 +49,7 @@ class Arena():
             if verbose:
                 assert self.display
                 self.display(board)
-            action = players[curPlayer + 1](self.game.getCanonicalForm(board, curPlayer))
+            action = np.argmax(policies[curPlayer + 1].getActionProb((self.game.getCanonicalForm(board, curPlayer))))
 
             valids = self.game.getValidMoves(self.game.getCanonicalForm(board, curPlayer), 1)
 

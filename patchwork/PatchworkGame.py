@@ -141,7 +141,6 @@ class PatchworkGame(Game):
         piCube = np.reshape(pi, (totalPatches + 1, 8, self.size, self.size)) # patches plus Advance Action
 
         symetries = []
-        lastAction = None
         for symOrientation in range(self.orientations):
             # Calculate boards
             newBoard = np.array([st.getPatchOrientation(board[0], symOrientation), st.getPatchOrientation(board[1], symOrientation), np.copy(board[2])])
@@ -187,7 +186,6 @@ class PatchworkGame(Game):
 #                    print (f"sym: {symOrientation}, p: {p}, o: {o}, pos: ({x},{y})")
                     assert x + po.shape[0] <=7 and y+po.shape[1] <= 7
 
-            lastAction = action
         return symetries
 
     def getSymetryPositions(self, positionPi, patchNo, patchOrientation, newOrientation):

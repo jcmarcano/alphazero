@@ -94,9 +94,10 @@ class State:
             self.buttonPos = GameInfo[6:8]
             self.leatherPatchPos = GameInfo[8]
             self.playerJustMoved = GameInfo[9]
-
+            # NExt Player not needed
+            # _ = GameInfo[10]
             # Patches
-            self.patchDeck = np.trim_zeros(GameInfo[10: 10 + len(self.patches) + 1])
+            self.patchDeck = np.trim_zeros(GameInfo[11: 11 + len(self.patches) + 1])
 #            print (f"Init patch deck: {self.patchDeck}")
 
         self.orientationTypes = [
@@ -111,7 +112,7 @@ class State:
         patchDeck = np.copy(self.patchDeck)
         patchDeck.resize(len(self.patches))
 
-        gameInfoTemp = np.concatenate((np.copy(self.buttons), np.copy(self.pos), np.copy(self.value), np.copy(self.buttonPos), np.array([self.leatherPatchPos, self.playerJustMoved]), patchDeck))        
+        gameInfoTemp = np.concatenate((np.copy(self.buttons), np.copy(self.pos), np.copy(self.value), np.copy(self.buttonPos), np.array([self.leatherPatchPos, self.playerJustMoved, self.getNextPlayer()]), patchDeck))        
         gameInfoTemp.resize(self.size * self.size)
         gameInfo = np.reshape(gameInfoTemp, (1, self.size, self.size))
         return np.concatenate((np.copy(self.board), gameInfo))

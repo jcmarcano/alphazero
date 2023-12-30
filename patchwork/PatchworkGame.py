@@ -122,10 +122,10 @@ class PatchworkGame(Game):
         newGameInfo[8] = GameInfo[8]
 
         # Player Just Moved
-        newGameInfo[9] = GameInfo[9] * player
+        newGameInfo[9:10] = GameInfo[9:10] * player
 
         # Deck
-        newGameInfo[10:] = np.copy(GameInfo[10:])
+        newGameInfo[11:] = np.copy(GameInfo[11:])
 
         newBoard[2] = np.reshape(newGameInfo, (self.size, self.size))
 

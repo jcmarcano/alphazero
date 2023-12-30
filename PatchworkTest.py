@@ -26,16 +26,27 @@ if __name__ == '__main__':
     board = game.getInitBoard()
     game.display(board)
 
-    while game.getGameEnded(board, 1) == 0:
-        moves = game.getValidMoves(board = board, player = 1)
-        action = np.random.choice(np.nonzero(moves)[0])
-        print("---------------------------")
-        print(f"action: {action}")
+    b1 = np.reshape(np.arange(49), (7,7))
+    print(b1)
+    print ("\n")
+    b2 = np.reshape(np.arange(48,-1,-1), (7,7))
+    print(b2)
+    print ("\n")
 
-        board, nextPlayer = game.getNextState(board, 1, action)
-        print(f"nextPlayer: {nextPlayer}")
-        board = game.getCanonicalForm(board, nextPlayer)
-        game.display(board)
+    c = np.stack((b1,b2), axis=2)
+    print (c)
+    print (c.shape)
+    if False:
+        while game.getGameEnded(board, 1) == 0:
+            moves = game.getValidMoves(board = board, player = 1)
+            action = np.random.choice(np.nonzero(moves)[0])
+            print("---------------------------")
+            print(f"action: {action}")
+
+            board, nextPlayer = game.getNextState(board, 1, action)
+            print(f"nextPlayer: {nextPlayer}")
+            board = game.getCanonicalForm(board, nextPlayer)
+            game.display(board)
 
 
 
